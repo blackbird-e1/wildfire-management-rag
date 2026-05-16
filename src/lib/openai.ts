@@ -25,6 +25,7 @@ export async function generateResponse(question: string, context: string[]) {
       You need to answer this question using the context provided.
       Do not mention that you have been provided with the context.
       QUESTION: ${question}.
+      CONTEXT: ${context}.
       `
     }]
   })
