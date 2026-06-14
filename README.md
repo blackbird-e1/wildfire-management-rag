@@ -1,65 +1,70 @@
-# F1-AI: Retrieval-Augmented Generation (RAG) Application
+## Running the Project Locally
 
-## Overview
-
-F1-AI is a Retrieval-Augmented Generation (RAG) application that leverages OpenAI's GPT-4 model and a vector database to provide context-aware answers to questions about Formula 1 racing. This project demonstrates how to build a RAG application using TypeScript, OpenAI, DataStax Astra DB, and Playwright.
-
-## Prerequisites
-
-- [Node.js](https://nodejs.org/en/download/)
-- [OpenAI API Key](https://beta.openai.com/signup/)
-- [DataStax Astra DB](https://astra.datastax.com/register)
-
-## Installation
-
-1. Clone the repository:
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/IAmTomShaw/f1-rag-ai.git
+git clone <repository-url>
+cd f1-rag-ai
 ```
 
-2. Install the dependencies:
+### 2. Install backend dependencies
 
 ```bash
-cd f1-rag-ai
 npm install
 ```
 
-## Configuration
-
-You'll need to paste your OpenAI API key and DataStax Astra DB credentials into the relevant files, or create a `.env` file in the root directory with the following environment variables:
+### 3. Install frontend dependencies
 
 ```bash
-OPENAI_API_KEY=your-openai-api-key
-ASTRA_DB_ID=your-astra-db-id
-ASTRA_DB_REGION=your-astra-db-region
-ASTRA_DB_USERNAME=your-astra-db-username
-ASTRA_DB_PASSWORD=your-astra-db-password
+cd client
+npm install
+cd ..
 ```
 
-You'll then need to make sure that these environment variables are referenced in your code and loaded correctly.
+### 4. Configure environment variables
 
-## Usage
+Create a `.env` file in the project root.
 
-You can modify the list of urls that I am scraping in the `src/ingest.ts` file. You can then run the following command to scrape the data:
+```env
+GROQ_API_KEY=your_groq_api_key
+JINA_API_KEY=your_jina_api_key
+```
+
+### 5. Generate embeddings (only required once)
 
 ```bash
 npm run ingest
 ```
 
-This will scrape the data from the urls and store it in the Astra DB.
+This scrapes the source documents, generates embeddings, and stores them in `data/vectors.json`.
 
-You can then run the following command to test the RAG application using the query defined in the `src/answer.ts` file:
+### 6. Start the backend
+
+Open a terminal in the project root and run:
 
 ```bash
-npm run answer
+npm run server
 ```
 
+The backend will start on:
 
-## License
+```
+http://localhost:3001
+```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### 7. Start the frontend
 
-## Credit
+Open a second terminal.
 
-This project was created by [Tom Shaw](https://tomshaw.dev)
+```bash
+cd client
+npm run dev
+```
+
+The React application will be available at:
+
+```
+http://localhost:5173
+```
+
+Open the URL in your browser and start asking questions about wildfire management.
