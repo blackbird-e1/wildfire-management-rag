@@ -1,37 +1,84 @@
+import fs from "fs";
+import path from "path";
 
+type Document = {
+  text: string;
+  $vector: number[];
+};
 
+const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_FILE = path.join(DATA_DIR, "vectors.json");
 
-import { DataAPIClient } from "@datastax/astra-db-ts";
+let documents: Document[] = [];
 
-const client = new DataAPIClient('YOUR_TOKEN');
-const db = client.db('YOUR_DB_URL');
-const collection = db.collection('f1gpt');
+function loadDocuments() {
+  if (documents.length > 0) {
+    return;
+  }
+
+  if (!fs.existsSync(DATA_FILE)) {
+    documents = [];
+    return;
+  }
+
+  const file = fs.readFileSync(DATA_FILE, "utf8");
+  documents = JSON.parse(file);
+}
+
+function saveDocuments() {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+
+  fs.writeFileSync(
+    DATA_FILE,
+    JSON.stringify(documents, null, 2),
+    "utf8"
+  );
+}
 
 export async function createCollection() {
-  const res = await db.createCollection("f1gpt", {
-    vector: {
-      dimension: 1536,
-      metric: "dot_product"
-    }
-  });
-  return res
+  documents = [];
 }
 
-export async function uploadData(data: {
-  $vector: number[],
-  text: string
-}[]) {
-  return await collection.insertMany(data);
+export async function uploadData(
+  data: {
+    $vector: number[];
+    text: string;
+  }[]
+) {
+  documents.push(...data);
+
+  saveDocuments();
 }
 
+function cosineSimilarity(a: number[], b: number[]) {
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
 
-export async function queryDatabase(query: number[]) {
-  const res = await collection.find(null, {
-    sort: {
-      $vector: query
-    },
-    limit: 10
-  }).toArray();
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
 
-  return res
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+export async function queryDatabase(
+  query: number[]
+): Promise<{ text: string }[]> {
+  loadDocuments();
+
+  return documents
+    .map((doc) => ({
+      text: doc.text,
+      score: cosineSimilarity(query, doc.$vector),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10)
+    .map((doc) => ({
+      text: doc.text,
+    }));
 }

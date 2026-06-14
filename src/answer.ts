@@ -1,19 +1,28 @@
-
-
 import { queryDatabase } from "./lib/db";
-import { generateEmbedding, generateResponse } from "./lib/openai";
+import { generateEmbedding, generateResponse } from "./lib/ai";
 
 async function askQuestion(question: string) {
-
+  // Convert the user's question into an embedding
   const embedding = await generateEmbedding(question);
 
-  const queryRes = await queryDatabase(embedding.data[0].embedding);
+  // Search the vector database
+  const queryRes = await queryDatabase(embedding);
 
-  const response = await generateResponse(question, queryRes.map((doc) => doc.text));
+  // Keep only valid text chunks
+  const context = queryRes
+    .map((doc) => doc.text)
+    .filter((text): text is string => text !== null);
+
+  // Generate the final answer
+  const response = await generateResponse(question, context);
 
   return response;
 }
 
-askQuestion("Why are George Russell and Max Verstappen arguing after Qatar 2024?").then((res) => {
-  console.log(res);
-});
+askQuestion("What are the main causes of wildfires?")
+  .then((res) => {
+    console.log(res);
+  })
+  .catch((err) => {
+    console.error(err);
+  });

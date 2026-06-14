@@ -1,38 +1,29 @@
-// Using playwright to scrape the data from the website urls
-
-
 import playwright from "playwright";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 
-
 export async function scrape(url: string) {
-
-  // Scrape the text from the website
-
+  // Launch browser
   const browser = await playwright.chromium.launch();
 
   const context = await browser.newContext();
 
   const page = await context.newPage();
 
-  await page.goto(url);
+  await page.goto(url, {
+    waitUntil: "domcontentloaded",
+  });
 
-  const text = await page.innerText("body");
-  
-  text.replace(/\n/g, " ");
+  // Extract page text
+  let text = await page.innerText("body");
+  text = text.replace(/\n/g, " ");
 
   await browser.close();
 
-  // Split the text into chunks
-
+  // Split into chunks
   const splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 512,
     chunkOverlap: 100,
   });
 
-  const output = await splitter.createDocuments([text]);
-
-  return output;
-
+  return await splitter.createDocuments([text]);
 }
-

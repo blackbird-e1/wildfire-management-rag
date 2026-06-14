@@ -1,47 +1,56 @@
-
-
 import { createCollection, uploadData } from "./lib/db";
-import { generateEmbedding } from "./lib/openai";
+import { generateEmbedding } from "./lib/ai";
 import { scrape } from "./lib/scrape";
 
 const urls = [
-  "https://en.wikipedia.org/wiki/Formula_One",
-  "https://en.wikipedia.org/wiki/George_Russell_(racing_driver)",
+  "https://en.wikipedia.org/wiki/Wildfire",
+  "https://en.wikipedia.org/wiki/Wildfire_suppression",
 ];
 
 async function ingest() {
-   
-  let chunks: { text: string, $vector: number[], url: string }[] = [];
+  const chunks: {
+    text: string;
+    $vector: number[];
+    url: string;
+  }[] = [];
 
-  await (Promise.all(urls.map(async (url) => {
-    let data = await scrape(url);
+  // Process one URL at a time
+  for (const url of urls) {
+    console.log(`Scraping: ${url}`);
 
-    const embeddings = await Promise.all(data.map(async (doc, index) => {
+    const documents = await scrape(url);
+
+    // Process one document at a time
+    for (const doc of documents) {
+      console.log("Generating embedding...");
+
       const embedding = await generateEmbedding(doc.pageContent);
-      return embedding;
-    }));
 
-    chunks = chunks.concat(data.map((doc, index) => {
-      return {
+      chunks.push({
         text: doc.pageContent,
-        $vector: embeddings[index].data[0].embedding,
-        url: url
-      }
-    }));
-  })));
+        $vector: embedding,
+        url,
+      });
+
+      // Small delay to avoid API rate limits
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+
+  console.log(`Uploading ${chunks.length} chunks.....`);
 
   await createCollection();
-  
-  await uploadData(chunks.map((doc, index) => {
-    return {
+
+  await uploadData(
+    chunks.map((doc) => ({
       $vector: doc.$vector,
       text: doc.text,
-      source: doc.url
-    }
-  }));
+    }))
+  );
+
+  console.log("✅ Ingestion completed successfully!");
 }
 
-ingest();
-
-
-
+ingest().catch((error) => {
+  console.error(error);
+});
