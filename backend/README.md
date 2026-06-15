@@ -4,7 +4,7 @@
 
 ```bash
 git clone <repository-url>
-cd f1-rag-ai
+cd wildfire-management-rag
 ```
 
 ### 2. Install backend dependencies
