@@ -7,40 +7,90 @@ git clone <repository-url>
 cd wildfire-management-rag
 ```
 
-### 2. Install backend dependencies
+### Project Structure
+
+```text
+wildfire-management-rag/
+│
+├── backend/          # Node.js + TypeScript backend
+│   ├── src/
+│   ├── data/
+│   ├── package.json
+│   └── .env
+│
+├── frontend/         # React + Vite frontend
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.ts
+│
+└── README.md
+```
+
+---
+
+## 2. Install Backend Dependencies
 
 ```bash
+cd backend
 npm install
 ```
 
-### 3. Install frontend dependencies
+---
+
+## 3. Install Frontend Dependencies
+
+Open a new terminal.
 
 ```bash
-cd client
+cd frontend
 npm install
-cd ..
 ```
 
-### 4. Configure environment variables
+---
 
-Create a `.env` file in the project root.
+## 4. Configure Environment Variables
+
+Create a `.env` file inside the **backend** folder.
+
+```text
+backend/.env
+```
+
+Add your API keys:
 
 ```env
 GROQ_API_KEY=your_groq_api_key
 JINA_API_KEY=your_jina_api_key
 ```
 
-### 5. Generate embeddings (only required once)
+---
+
+## 5. Generate Embeddings (Only Required Once)
+
+From the **backend** directory, run:
 
 ```bash
 npm run ingest
 ```
 
-This scrapes the source documents, generates embeddings, and stores them in `data/vectors.json`.
+This will:
 
-### 6. Start the backend
+* Scrape the wildfire documents
+* Generate embeddings
+* Store the vector database inside:
 
-Open a terminal in the project root and run:
+```text
+backend/data/vectors.json
+```
+
+You only need to run this again if you add or modify the source documents.
+
+---
+
+## 6. Start the Backend
+
+From the **backend** directory:
 
 ```bash
 npm run server
@@ -48,23 +98,70 @@ npm run server
 
 The backend will start on:
 
-```
+```text
 http://localhost:3001
 ```
 
-### 7. Start the frontend
+Leave this terminal running.
+
+---
+
+## 7. Start the Frontend
 
 Open a second terminal.
 
 ```bash
-cd client
+cd frontend
 npm run dev
 ```
 
-The React application will be available at:
+The frontend will start on:
 
-```
+```text
 http://localhost:5173
 ```
 
 Open the URL in your browser and start asking questions about wildfire management.
+
+---
+
+## Running the Application
+
+You should have **two terminals** running:
+
+### Terminal 1
+
+```bash
+cd backend
+npm run server
+```
+
+### Terminal 2
+
+```bash
+cd frontend
+npm run dev
+```
+
+---
+
+## Tech Stack
+
+### Frontend
+
+* React
+* TypeScript
+* Vite
+
+### Backend
+
+* Node.js
+* TypeScript
+* Express
+
+### AI Stack
+
+* Groq LLM
+* Jina Embeddings
+* Retrieval-Augmented Generation (RAG)
+* Vector Search

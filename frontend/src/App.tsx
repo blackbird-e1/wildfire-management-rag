@@ -1,58 +1,111 @@
 import { useState } from "react";
-import "./App.css";
+
+import Header from "./components/Header";
+import WelcomeScreen from "./components/WelcomeScreen";
+import ChatInput from "./components/ChatInput";
+import TypingIndicator from "./components/TypingIndicator";
+
+import type { Message } from "./types/Message";
 
 function App() {
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  async function askQuestion() {
-    if (!question.trim()) return;
+  async function sendMessage(message: string) {
+    if (!message.trim() || isLoading) {
+      return;
+    }
 
-    setLoading(true);
-    setAnswer("");
+    const userMessage: Message = {
+      role: "user",
+      content: message,
+    };
 
-    const response = await fetch("http://localhost:3001/ask", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        question,
-      }),
-    });
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
 
-    const data = await response.json();
+    try {
+      const response = await fetch("http://localhost:3001/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question: message,
+        }),
+      });
 
-    setAnswer(data.answer);
-    setLoading(false);
+      const data = await response.json();
+
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: data.answer,
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Something went wrong while contacting the server.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
-    <div className="container">
-      <div className="card">
-        <h1>🔥 Wildfire RAG Assistant</h1>
+    <div className="h-screen bg-[#0b0f14] flex flex-col">
 
-        <p className="subtitle">
-          Ask questions about wildfire causes, prevention and suppression.
-        </p>
+      <Header
+        hasMessages={messages.length > 0}
+        onClear={() => setMessages([])}
+      />
 
-        <textarea
-          placeholder="Example: What are the main causes of wildfires?"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-        />
+      <div className="flex-1 overflow-y-auto">
 
-        <button onClick={askQuestion} disabled={loading}>
-          {loading ? "Thinking..." : "Ask Question"}
-        </button>
+        {messages.length === 0 ? (
+          <WelcomeScreen
+            onSuggestion={sendMessage}
+          />
+        ) : (
+          <div className="max-w-4xl mx-auto px-6 py-6 space-y-6">
 
-        <div className="answer">
-          <h2>Answer</h2>
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${
+                  message.role === "user"
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
+              >
+                <div
+                  className={`max-w-3xl rounded-xl px-4 py-3 whitespace-pre-wrap ${
+                    message.role === "user"
+                      ? "bg-red-600 text-white"
+                      : "bg-[#1a1a1a] text-gray-200"
+                  }`}
+                >
+                  {message.content}
+                </div>
+              </div>
+            ))}
 
-          <p>{answer || "Your answer will appear here."}</p>
-        </div>
+            {isLoading && <TypingIndicator />}
+
+          </div>
+        )}
+
       </div>
+
+      <ChatInput
+        onSend={sendMessage}
+        isLoading={isLoading}
+      />
+
     </div>
   );
 }
