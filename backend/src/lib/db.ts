@@ -1,84 +1,84 @@
-import fs from "fs";
-import path from "path";
+import "dotenv/config";
+import { DataAPIClient } from "@datastax/astra-db-ts";
+
+if (!process.env.ASTRA_DB_TOKEN) {
+  throw new Error(
+    "ASTRA_DB_TOKEN is missing. Check your backend/.env file."
+  );
+}
+
+if (!process.env.ASTRA_DB_ENDPOINT) {
+  throw new Error(
+    "ASTRA_DB_ENDPOINT is missing. Check your backend/.env file."
+  );
+}
 
 type Document = {
   text: string;
   $vector: number[];
 };
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "vectors.json");
+const client = new DataAPIClient(process.env.ASTRA_DB_TOKEN);
 
-let documents: Document[] = [];
+const db = client.db(process.env.ASTRA_DB_ENDPOINT);
 
-function loadDocuments() {
-  if (documents.length > 0) {
-    return;
-  }
+const COLLECTION_NAME = "wildfire";
 
-  if (!fs.existsSync(DATA_FILE)) {
-    documents = [];
-    return;
-  }
-
-  const file = fs.readFileSync(DATA_FILE, "utf8");
-  documents = JSON.parse(file);
-}
-
-function saveDocuments() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-
-  fs.writeFileSync(
-    DATA_FILE,
-    JSON.stringify(documents, null, 2),
-    "utf8"
-  );
-}
+const collection = db.collection(COLLECTION_NAME);
 
 export async function createCollection() {
-  documents = [];
+  try {
+    await db.createCollection(COLLECTION_NAME, {
+      vector: {
+        dimension: 1024,
+        metric: "cosine",
+      },
+    });
+
+  } catch (error: any) {
+    const message = String(error?.message ?? "").toLowerCase();
+
+    if (
+      message.includes("already") ||
+      message.includes("exists")
+    ) {
+      return;
+    }
+
+    throw error;
+  }
 }
 
 export async function uploadData(
-  data: {
-    $vector: number[];
-    text: string;
-  }[]
+  data: Document[]
 ) {
-  documents.push(...data);
-
-  saveDocuments();
-}
-
-function cosineSimilarity(a: number[], b: number[]) {
-  let dot = 0;
-  let normA = 0;
-  let normB = 0;
-
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
+  if (data.length === 0) {
+    return;
   }
 
-  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+  await collection.insertMany(data);
+
 }
 
 export async function queryDatabase(
   query: number[]
 ): Promise<{ text: string }[]> {
-  loadDocuments();
+  const results = await collection
+    .find(
+      {},
+      {
+        sort: {
+          $vector: query,
+        },
+        projection: {
+          text: 1,
+        },
+        limit: 10,
+      }
+    )
+    .toArray();
 
-  return documents
-    .map((doc) => ({
-      text: doc.text,
-      score: cosineSimilarity(query, doc.$vector),
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10)
-    .map((doc) => ({
-      text: doc.text,
-    }));
+  return results.map((doc: any) => ({
+    text: doc.text,
+  }));
 }

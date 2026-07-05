@@ -25,7 +25,10 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3001/ask", {
+      const API_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:3001";
+
+      const response = await fetch(`${API_URL}/ask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
