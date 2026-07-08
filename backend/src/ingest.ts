@@ -7,7 +7,7 @@ const urls = [
   "https://en.wikipedia.org/wiki/Wildfire_suppression",
 ];
 
-async function ingest() {
+export default async function ingest() {
   const chunks: {
     text: string;
     $vector: number[];
