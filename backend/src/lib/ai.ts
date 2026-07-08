@@ -2,6 +2,14 @@ import "dotenv/config";
 
 import Groq from "groq-sdk";
 
+if (!process.env.GROQ_API_KEY) {
+  throw new Error("GROQ_API_KEY is missing.");
+}
+
+if (!process.env.JINA_API_KEY) {
+  throw new Error("JINA_API_KEY is missing.");
+}
+
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
@@ -9,29 +17,48 @@ const groq = new Groq({
 export async function generateEmbedding(
   text: string
 ): Promise<number[]> {
-  const response = await fetch("https://api.jina.ai/v1/embeddings", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.JINA_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "jina-embeddings-v3",
-      input: [text],
-    }),
-  });
+  console.log("Generating embedding...");
 
-  if (!response.ok) {
-    const error = await response.text();
+  const controller = new AbortController();
 
-    throw new Error(
-      `Jina API Error (${response.status}): ${error}`
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, 30000);
+
+  try {
+    const response = await fetch(
+      "https://api.jina.ai/v1/embeddings",
+      {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.JINA_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "jina-embeddings-v3",
+          input: [text],
+        }),
+      }
     );
+
+    if (!response.ok) {
+      const error = await response.text();
+
+      throw new Error(
+        `Jina API Error (${response.status}): ${error}`
+      );
+    }
+
+    const data = await response.json();
+
+    return data.data[0].embedding;
+  } catch (error) {
+    console.error("Embedding generation failed:", error);
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const data = await response.json();
-
-  return data.data[0].embedding;
 }
 
 export async function generateResponse(
@@ -59,7 +86,5 @@ ${context.join("\n\n")}
     ],
   });
 
-  return response.choices[0].message.content;
+  return response.choices[0].message.content ?? "";
 }
-
-generateEmbedding("Wildfire")
