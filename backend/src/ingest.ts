@@ -51,6 +51,8 @@ export default async function ingest() {
   console.log("✅ Ingestion completed successfully!");
 }
 
-ingest().catch((error) => {
-  console.error(error);
-});
+if (require.main === module) {
+  ingest().catch((error) => {
+    console.error(error);
+  });
+}
