@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { DataAPIClient } from "@datastax/astra-db-ts";
+import * as fetchH2 from "fetch-h2";
 
 if (!process.env.ASTRA_DB_TOKEN) {
   throw new Error(
@@ -20,7 +21,12 @@ type Document = {
 
 console.log("Initializing Astra client...");
 
-const client = new DataAPIClient(process.env.ASTRA_DB_TOKEN);
+const client = new DataAPIClient(process.env.ASTRA_DB_TOKEN, {
+  httpOptions: {
+    client: "fetch-h2",
+    fetchH2,
+  },
+});
 
 const db = client.db(process.env.ASTRA_DB_ENDPOINT);
 
