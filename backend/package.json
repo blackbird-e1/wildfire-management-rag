@@ -21,9 +21,11 @@
   },
   "dependencies": {
     "@datastax/astra-db-ts": "^2.2.1",
+    "@langchain/langgraph": "^0.2.20",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^4.21.2",
+    "fetch-h2": "^3.0.2",
     "fs": "^0.0.1-security",
     "groq-sdk": "^1.2.1",
     "langchain": "^0.3.6",
