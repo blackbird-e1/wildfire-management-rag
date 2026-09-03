@@ -22,5 +22,35 @@ async def ask_wildfire(question: str) -> str:
     return data["answer"]
 
 
+@mcp.tool()
+async def search_wildfire_knowledge(query: str) -> str:
+    """Search the Wildfire Management knowledge base for relevant documents."""
+
+    async with httpx2.AsyncClient() as client:
+        response = await client.post(
+            "http://localhost:3001/search",
+            json={"query": query},
+            timeout=60.0,
+        )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    results = data["results"]
+
+    if not results:
+        return "No relevant documents were found."
+
+    formatted_results = []
+
+    for index, document in enumerate(results, start=1):
+        formatted_results.append(
+            f"DOCUMENT {index}:\n{document['text']}"
+        )
+
+    return "\n\n".join(formatted_results)
+
+
 if __name__ == "__main__":
     mcp.run()

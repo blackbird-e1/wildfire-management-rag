@@ -3,6 +3,8 @@ import cors from "cors";
 
 import ingest from "./ingest";
 import { askWildfireGraph } from "./graph/wildfireGraph";
+import { generateEmbedding } from "./lib/ai";
+import { queryDatabase } from "./lib/db";
 
 const app = express();
 
@@ -62,6 +64,37 @@ app.post("/ask", async (req, res) => {
     });
   } catch (error) {
     console.error("Error while processing request:", error);
+
+    res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+});
+
+app.post("/search", async (req, res) => {
+  try {
+    const { query } = req.body;
+
+    if (!query || typeof query !== "string") {
+      res.status(400).json({
+        error: "A valid query is required.",
+      });
+
+      return;
+    }
+
+    const embedding = await generateEmbedding(query);
+
+    const documents = await queryDatabase(embedding);
+
+    res.status(200).json({
+      results: documents,
+    });
+  } catch (error) {
+    console.error(
+      "Error while searching wildfire knowledge:",
+      error
+    );
 
     res.status(500).json({
       error: "Internal Server Error",
