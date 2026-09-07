@@ -6,6 +6,7 @@ import WelcomeAnimation from "./components/WelcomeAnimation";
 import ChatInput from "./components/ChatInput";
 
 import type { Message } from "./types/Message";
+import Monitoring from "./components/Monitoring";
 
 type View =
   | "overview"
@@ -144,10 +145,7 @@ function App() {
         );
 
       case "monitoring":
-        return renderPlaceholder(
-          "Wildfire Monitoring",
-          "A dedicated monitoring workspace for tracking wildfire activity, environmental signals, and incoming intelligence."
-        );
+        return <Monitoring />;
 
       case "risk":
         return renderPlaceholder(

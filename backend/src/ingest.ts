@@ -90,6 +90,7 @@ export default async function ingest() {
     chunks.map((doc) => ({
       $vector: doc.$vector,
       text: doc.text,
+      url: doc.url,
     }))
   );
 
