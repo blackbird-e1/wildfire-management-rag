@@ -8,6 +8,8 @@ import ChatInput from "./components/ChatInput";
 import type { Message } from "./types/Message";
 import Monitoring from "./components/Monitoring";
 
+import RiskMap from "./components/RiskMap";
+
 type View =
   | "overview"
   | "monitoring"
@@ -148,10 +150,7 @@ function App() {
         return <Monitoring />;
 
       case "risk":
-        return renderPlaceholder(
-          "Risk Map",
-          "A geospatial risk workspace for visualizing wildfire-prone regions and future external data layers."
-        );
+        return <RiskMap />;
 
       case "incidents":
         return renderPlaceholder(
