@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+
+import type { Incident } from "../types/Incident";
 
 import {
   CircleMarker,
@@ -40,24 +42,49 @@ function MapClickHandler({
 
 function MapController({
   searchResult,
+  selectedIncident,
 }: {
   searchResult: SearchResult | null;
+  selectedIncident: Incident | null;
 }) {
   const map = useMap();
 
-  if (searchResult) {
-    const latitude = Number(searchResult.lat);
-    const longitude = Number(searchResult.lon);
+  useEffect(() => {
+    if (selectedIncident) {
+      map.flyTo(
+        [
+          selectedIncident.latitude,
+          selectedIncident.longitude,
+        ],
+        10,
+        {
+          duration: 1.5,
+        }
+      );
 
-    map.flyTo([latitude, longitude], 9, {
-      duration: 1.5,
-    });
-  }
+      return;
+    }
+
+    if (searchResult) {
+      const latitude = Number(searchResult.lat);
+      const longitude = Number(searchResult.lon);
+
+      map.flyTo([latitude, longitude], 9, {
+        duration: 1.5,
+      });
+    }
+  }, [map, searchResult, selectedIncident]);
 
   return null;
 }
 
-export default function RiskMap() {
+type RiskMapProps = {
+  selectedIncident: Incident | null;
+};
+
+export default function RiskMap({
+  selectedIncident,
+}: RiskMapProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResult, setSearchResult] =
     useState<SearchResult | null>(null);
@@ -186,7 +213,10 @@ export default function RiskMap() {
               onSelect={handleMapSelection}
             />
 
-            <MapController searchResult={searchResult} />
+            <MapController
+              searchResult={searchResult}
+              selectedIncident={selectedIncident}
+            />
 
             {/* Existing geographic features */}
             {features.map((feature) => (
@@ -205,6 +235,36 @@ export default function RiskMap() {
                 </Popup>
               </CircleMarker>
             ))}
+
+            {selectedIncident && (
+              <CircleMarker
+                center={[
+                  selectedIncident.latitude,
+                  selectedIncident.longitude,
+                ]}
+                radius={11}
+              >
+                <Popup>
+                  <div>
+                    <strong>{selectedIncident.title}</strong>
+
+                    <p className="mt-1">
+                      Status: {selectedIncident.status}
+                    </p>
+
+                    <p className="mt-1">
+                      Location: {selectedIncident.location}
+                    </p>
+
+                    <p className="mt-1">
+                      Coordinates:{" "}
+                      {selectedIncident.latitude.toFixed(5)},{" "}
+                      {selectedIncident.longitude.toFixed(5)}
+                    </p>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            )}
 
             {/* Search result */}
             {searchResult && (
@@ -284,6 +344,12 @@ export default function RiskMap() {
             <span className="text-gray-300">
               Selected: {selectedLocation.lat.toFixed(4)},{" "}
               {selectedLocation.lng.toFixed(4)}
+            </span>
+          )}
+
+          {selectedIncident && (
+            <span className="text-gray-300">
+              Incident: {selectedIncident.title}
             </span>
           )}
         </div>

@@ -10,6 +10,10 @@ import Monitoring from "./components/Monitoring";
 
 import RiskMap from "./components/RiskMap";
 
+import Incidents from "./components/Incidents";
+
+import type { Incident } from "./types/Incident";
+
 type View =
   | "overview"
   | "monitoring"
@@ -34,6 +38,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [selectedIncident, setSelectedIncident] =
+  useState<Incident | null>(null);
 
   async function sendMessage(message: string) {
     if (!message.trim() || isLoading) {
@@ -98,6 +105,12 @@ function App() {
     setSidebarOpen(false);
   }
 
+  function handleViewIncidentOnMap(incident: Incident) {
+    setSelectedIncident(incident);
+    setActiveView("risk");
+    setSidebarOpen(false);
+  }
+
   function clearChat() {
     setMessages([]);
     setActiveView("overview");
@@ -150,12 +163,13 @@ function App() {
         return <Monitoring />;
 
       case "risk":
-        return <RiskMap />;
+        return <RiskMap selectedIncident={selectedIncident} />;
 
       case "incidents":
-        return renderPlaceholder(
-          "Incident Center",
-          "A centralized workspace for wildfire incidents, response information, and operational status."
+        return (
+          <Incidents
+            onViewOnMap={handleViewIncidentOnMap}
+          />
         );
 
       case "reports":
