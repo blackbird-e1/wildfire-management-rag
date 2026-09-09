@@ -111,6 +111,14 @@ function App() {
     setSidebarOpen(false);
   }
 
+  function handleIncidentSelect(incident: Incident) {
+    setSelectedIncident(incident);
+  }
+
+  function handleClearIncident() {
+    setSelectedIncident(null);
+  }
+
   function clearChat() {
     setMessages([]);
     setActiveView("overview");
@@ -163,7 +171,13 @@ function App() {
         return <Monitoring />;
 
       case "risk":
-        return <RiskMap selectedIncident={selectedIncident} />;
+        return (
+          <RiskMap
+            selectedIncident={selectedIncident}
+            onIncidentSelect={handleIncidentSelect}
+            onClearIncident={handleClearIncident}
+          />
+        );
 
       case "incidents":
         return (

@@ -80,10 +80,14 @@ function MapController({
 
 type RiskMapProps = {
   selectedIncident: Incident | null;
+  onIncidentSelect?: (incident: Incident) => void;
+  onClearIncident?: () => void;
 };
 
 export default function RiskMap({
   selectedIncident,
+  onIncidentSelect,
+  onClearIncident,
 }: RiskMapProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResult, setSearchResult] =
@@ -108,7 +112,7 @@ export default function RiskMap({
     setSearchError("");
     setSearchResult(null);
     setSelectedLocation(null);
-
+    onClearIncident?.();
     try {
       const params = new URLSearchParams({
         q: query,
@@ -243,6 +247,9 @@ export default function RiskMap({
                   selectedIncident.longitude,
                 ]}
                 radius={11}
+                eventHandlers={{
+                  click: () => onIncidentSelect?.(selectedIncident),
+                }}
               >
                 <Popup>
                   <div>

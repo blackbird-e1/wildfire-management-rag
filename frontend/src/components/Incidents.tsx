@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Incident } from "../types/Incident";
 import { INCIDENTS } from "../data/incidents";
+import IncidentDetail from "./IncidentDetail";
 
 type IncidentsProps = {
   onViewOnMap?: (incident: Incident) => void;
@@ -48,7 +49,9 @@ function formatReportedAt(value: string) {
 export default function Incidents({ onViewOnMap }: IncidentsProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(
+    null
+  );
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
   const filteredIncidents = useMemo(() => {
@@ -196,7 +199,8 @@ export default function Incidents({ onViewOnMap }: IncidentsProps) {
         {filteredIncidents.map((incident) => (
           <article
             key={incident.id}
-            className="rounded-2xl border border-white/10 bg-white/[0.025] p-5 transition hover:border-white/15"
+            onClick={() => setSelectedIncident(incident)}
+            className="cursor-pointer rounded-2xl border border-white/10 bg-white/[0.025] p-5 transition hover:border-white/15 hover:bg-white/[0.04]"
           >
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
@@ -288,6 +292,17 @@ export default function Incidents({ onViewOnMap }: IncidentsProps) {
           </div>
         )}
       </div>
+
+      {selectedIncident && (
+        <IncidentDetail
+          incident={selectedIncident}
+          onClose={() => setSelectedIncident(null)}
+          onViewOnMap={(incident) => {
+            setSelectedIncident(null);
+            onViewOnMap?.(incident);
+          }}
+        />
+      )}
     </div>
   );
 }
