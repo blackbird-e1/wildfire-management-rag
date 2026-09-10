@@ -1,6 +1,7 @@
 import {
   generateEmbedding,
   generateResponse,
+  generateReportResponse,
 } from "../lib/ai";
 
 import {
@@ -134,14 +135,23 @@ export async function retrieveNode(
   const docs =
     await queryDatabase(embedding);
 
-  const context =
-    docs
-      .map((doc) => doc.text)
-      .filter(
-        (text): text is string =>
-          typeof text === "string" &&
-          text.trim().length > 0
-      );
+  const sources: {
+    text: string;
+    url: string;
+  }[] = docs
+    .filter(
+      (doc) =>
+        typeof doc.text === "string" &&
+        doc.text.trim().length > 0
+    )
+    .map((doc) => ({
+      text: doc.text,
+      url: doc.url,
+    }));
+
+  const context = sources.map(
+    (source) => source.text
+  );
 
   console.log(
     `[Graph] retrieved ${context.length} documents`
@@ -149,6 +159,7 @@ export async function retrieveNode(
 
   return {
     context,
+    sources,
     retrievalAttempts: attempt,
   };
 }
@@ -281,5 +292,23 @@ export async function generateNode(
 
   return {
     answer,
+  };
+}
+
+export async function generateReportNode(
+  state: WildfireState
+) {
+  console.log(
+    "[Graph] generating report"
+  );
+
+  const report =
+    await generateReportResponse(
+      state.question,
+      state.context
+    );
+
+  return {
+    report,
   };
 }

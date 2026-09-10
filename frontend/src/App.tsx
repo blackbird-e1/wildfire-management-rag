@@ -13,6 +13,7 @@ import RiskMap from "./components/RiskMap";
 import Incidents from "./components/Incidents";
 
 import type { Incident } from "./types/Incident";
+import Reports from "./components/Reports";
 
 type View =
   | "overview"
@@ -187,10 +188,7 @@ function App() {
         );
 
       case "reports":
-        return renderPlaceholder(
-          "Intelligence Reports",
-          "Generate and review structured wildfire intelligence reports from the underlying knowledge system."
-        );
+        return <Reports />;
 
       default:
         return (
