@@ -17,6 +17,7 @@ if (!process.env.ASTRA_DB_ENDPOINT) {
 type Document = {
   text: string;
   $vector: number[];
+  url: string;
 };
 
 console.log("Initializing Astra client...");
@@ -93,7 +94,12 @@ export async function uploadData(data: Document[]) {
 
 export async function queryDatabase(
   query: number[]
-): Promise<{ text: string }[]> {
+): Promise<
+  {
+    text: string;
+    url: string;
+  }[]
+> {
   console.log("Running vector search...");
 
   try {
@@ -106,6 +112,7 @@ export async function queryDatabase(
           },
           projection: {
             text: 1,
+            url: 1,
           },
           limit: 10,
         }
@@ -116,6 +123,7 @@ export async function queryDatabase(
 
     return results.map((doc: any) => ({
       text: doc.text,
+      url: doc.url,
     }));
   } catch (error) {
     console.error("❌ queryDatabase() failed:");

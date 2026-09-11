@@ -54,7 +54,11 @@ export async function generateEmbedding(
 
     return data.data[0].embedding;
   } catch (error) {
-    console.error("Embedding generation failed:", error);
+    console.error(
+      "Embedding generation failed:",
+      error
+    );
+
     throw error;
   } finally {
     clearTimeout(timeout);
@@ -87,4 +91,83 @@ ${context.join("\n\n")}
   });
 
   return response.choices[0].message.content ?? "";
+}
+
+
+/*
+ * Generate a structured wildfire intelligence report.
+ *
+ * This is separate from generateResponse()
+ * so the existing /ask chat behaviour remains unchanged.
+ */
+export async function generateReportResponse(
+  question: string,
+  context: string[]
+) {
+  const response =
+    await groq.chat.completions.create({
+      model: "openai/gpt-oss-120b",
+
+      messages: [
+        {
+          role: "system",
+          content: `
+You are a wildfire management intelligence analyst.
+
+Answer ONLY using the supplied context.
+
+Create a structured intelligence report.
+
+Return ONLY valid JSON.
+Do not include markdown.
+Do not include code fences.
+
+The JSON must have exactly this structure:
+
+{
+  "executiveSummary": "A concise summary of the answer.",
+  "keyFindings": [
+    "Finding 1",
+    "Finding 2",
+    "Finding 3"
+  ],
+  "operationalConsiderations": [
+    "Consideration 1",
+    "Consideration 2"
+  ]
+}
+
+Rules:
+- Do not invent facts.
+- Do not invent sources.
+- Do not include URLs.
+- Use only information supported by the supplied context.
+- Keep the executive summary concise.
+- Keep key findings specific and useful.
+- Keep operational considerations relevant to wildfire management.
+- If the context does not contain enough information, clearly say so.
+          `,
+        },
+
+        {
+          role: "user",
+          content: `
+QUESTION:
+${question}
+
+CONTEXT:
+${context.join("\n\n")}
+          `,
+        },
+      ],
+
+      response_format: {
+        type: "json_object",
+      },
+    });
+
+  const content =
+    response.choices[0].message.content ?? "{}";
+
+  return JSON.parse(content);
 }

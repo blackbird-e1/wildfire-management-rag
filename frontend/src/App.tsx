@@ -6,6 +6,14 @@ import WelcomeAnimation from "./components/WelcomeAnimation";
 import ChatInput from "./components/ChatInput";
 
 import type { Message } from "./types/Message";
+import Monitoring from "./components/Monitoring";
+
+import RiskMap from "./components/RiskMap";
+
+import Incidents from "./components/Incidents";
+
+import type { Incident } from "./types/Incident";
+import Reports from "./components/Reports";
 
 type View =
   | "overview"
@@ -31,6 +39,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [selectedIncident, setSelectedIncident] =
+  useState<Incident | null>(null);
 
   async function sendMessage(message: string) {
     if (!message.trim() || isLoading) {
@@ -95,6 +106,20 @@ function App() {
     setSidebarOpen(false);
   }
 
+  function handleViewIncidentOnMap(incident: Incident) {
+    setSelectedIncident(incident);
+    setActiveView("risk");
+    setSidebarOpen(false);
+  }
+
+  function handleIncidentSelect(incident: Incident) {
+    setSelectedIncident(incident);
+  }
+
+  function handleClearIncident() {
+    setSelectedIncident(null);
+  }
+
   function clearChat() {
     setMessages([]);
     setActiveView("overview");
@@ -144,28 +169,26 @@ function App() {
         );
 
       case "monitoring":
-        return renderPlaceholder(
-          "Wildfire Monitoring",
-          "A dedicated monitoring workspace for tracking wildfire activity, environmental signals, and incoming intelligence."
-        );
+        return <Monitoring />;
 
       case "risk":
-        return renderPlaceholder(
-          "Risk Map",
-          "A geospatial risk workspace for visualizing wildfire-prone regions and future external data layers."
+        return (
+          <RiskMap
+            selectedIncident={selectedIncident}
+            onIncidentSelect={handleIncidentSelect}
+            onClearIncident={handleClearIncident}
+          />
         );
 
       case "incidents":
-        return renderPlaceholder(
-          "Incident Center",
-          "A centralized workspace for wildfire incidents, response information, and operational status."
+        return (
+          <Incidents
+            onViewOnMap={handleViewIncidentOnMap}
+          />
         );
 
       case "reports":
-        return renderPlaceholder(
-          "Intelligence Reports",
-          "Generate and review structured wildfire intelligence reports from the underlying knowledge system."
-        );
+        return <Reports />;
 
       default:
         return (

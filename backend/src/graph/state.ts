@@ -15,6 +15,19 @@ export const WildfireState = Annotation.Root({
 
   context: Annotation<string[]>(),
 
+  sources: Annotation<
+    {
+      text: string;
+      url: string;
+    }[]
+  >(),
+
+  report: Annotation<{
+    executiveSummary: string;
+    keyFindings: string[];
+    operationalConsiderations: string[];
+  }>(),
+
   retrievalScore: Annotation<number>(),
 
   retrievalQuality: Annotation<
