@@ -125,38 +125,6 @@ function App() {
     setActiveView("overview");
   }
 
-  function renderPlaceholder(
-    title: string,
-    description: string
-  ) {
-    return (
-      <div className="mx-auto flex w-full max-w-5xl flex-1 items-center justify-center px-6">
-        <div className="max-w-xl text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-2xl text-red-500">
-            ◉
-          </div>
-
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-500">
-            Module
-          </p>
-
-          <h1 className="mt-3 text-3xl font-semibold text-white">
-            {title}
-          </h1>
-
-          <p className="mt-3 text-sm leading-6 text-gray-500">
-            {description}
-          </p>
-
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs text-gray-500">
-            <span className="h-1.5 w-1.5 rounded-full bg-gray-500" />
-            Module ready for integration
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   function renderMainContent() {
     switch (activeView) {
       case "overview":
