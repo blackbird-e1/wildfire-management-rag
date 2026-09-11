@@ -3,6 +3,11 @@ import cors from "cors";
 
 import ingest from "./ingest";
 
+import { overrideFetchImplementation } from "langsmith";
+import { langsmithFetch } from "./lib/langsmithFetch";
+
+overrideFetchImplementation(langsmithFetch);
+
 import {
   askWildfireGraph,
   generateWildfireReport,

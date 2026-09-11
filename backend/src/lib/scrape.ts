@@ -1,5 +1,5 @@
 import playwright from "playwright";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 export async function scrape(url: string) {
   // Launch browser
