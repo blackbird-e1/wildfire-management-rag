@@ -137,7 +137,8 @@ export async function retrieveNode(
 
   const sources: {
     text: string;
-    url: string;
+    source: string;
+    sourceType: "url" | "pdf";
   }[] = docs
     .filter(
       (doc) =>
@@ -146,7 +147,8 @@ export async function retrieveNode(
     )
     .map((doc) => ({
       text: doc.text,
-      url: doc.url,
+      source: doc.source,
+      sourceType: doc.sourceType,
     }));
 
   const context = sources.map(

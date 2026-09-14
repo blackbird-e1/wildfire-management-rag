@@ -41,10 +41,11 @@ async function generateEmbeddingWithRetry(
 
 export default async function ingest() {
   const chunks: {
-    text: string;
-    $vector: number[];
-    url: string;
-  }[] = [];
+  text: string;
+  $vector: number[];
+  source: string;
+  sourceType: "url" | "pdf";
+}[] = [];
 
   let totalChunks = 0;
 
@@ -73,7 +74,8 @@ export default async function ingest() {
       chunks.push({
         text: doc.pageContent,
         $vector: embedding,
-        url,
+        source: url,
+        sourceType: "url",
       });
 
       await sleep(DELAY_MS);
@@ -90,7 +92,8 @@ export default async function ingest() {
     chunks.map((doc) => ({
       $vector: doc.$vector,
       text: doc.text,
-      url: doc.url,
+      source: doc.source,
+      sourceType: doc.sourceType,
     }))
   );
 
