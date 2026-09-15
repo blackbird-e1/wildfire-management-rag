@@ -40,6 +40,44 @@ export default function WelcomeScreen({
                 }`}
               >
                 {message.content}
+
+                {message.role === "assistant" &&
+                  message.sources &&
+                  message.sources.length > 0 && (
+                    <div className="mt-4 border-t border-white/10 pt-3">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-gray-600">
+                        Source{message.sources.length > 1 ? "s" : ""}
+                      </p>
+
+                      <div className="mt-2 space-y-1">
+                        {Array.from(
+                          new Map(
+                            message.sources.map((source) => [
+                              `${source.source}|${source.sourceType}`,
+                              source,
+                            ])
+                          ).values()
+                        ).map((source, sourceIndex) => (
+                          <div
+                            key={`${source.source}-${sourceIndex}`}
+                            className="flex items-center gap-2 text-xs text-gray-500"
+                          >
+                            <span>
+                              {source.sourceType === "pdf"
+                                ? "📄"
+                                : "🔗"}
+                            </span>
+
+                            <span>{source.source}</span>
+
+                            <span className="text-gray-700">
+                              · {source.sourceType.toUpperCase()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
               </div>
             </div>
           ))}

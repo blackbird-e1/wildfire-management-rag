@@ -1,7 +1,6 @@
 import { createCollection, uploadData } from "./lib/db";
 import { generateEmbedding } from "./lib/ai";
 import { scrape } from "./lib/scrape";
-import { chunkPdf } from "./lib/pdf";
 
 const urls = [
   "https://en.wikipedia.org/wiki/Wildfire",
@@ -38,49 +37,6 @@ async function generateEmbeddingWithRetry(
   }
 
   throw lastError;
-}
-
-async function ingestPdf(
-  buffer: Buffer,
-  source: string,
-  chunks: {
-    text: string;
-    $vector: number[];
-    source: string;
-    sourceType: "url" | "pdf";
-  }[],
-  totalChunks: { value: number }
-) {
-  console.log(`\n====================================`);
-  console.log(`Processing PDF: ${source}`);
-  console.log(`====================================\n`);
-
-  const documents = await chunkPdf(buffer);
-
-  console.log(`Found ${documents.length} chunks.`);
-
-  for (let i = 0; i < documents.length; i++) {
-    const doc = documents[i];
-
-    totalChunks.value++;
-
-    console.log(
-      `Embedding PDF chunk ${i + 1}/${documents.length} (${totalChunks.value} total)`
-    );
-
-    const embedding = await generateEmbeddingWithRetry(
-      doc.pageContent
-    );
-
-    chunks.push({
-      text: doc.pageContent,
-      $vector: embedding,
-      source,
-      sourceType: "pdf",
-    });
-
-    await sleep(DELAY_MS);
-  }
 }
 
 export default async function ingest() {
@@ -127,15 +83,6 @@ export default async function ingest() {
       await sleep(DELAY_MS);
     }
   }
-
-  // const pdfBuffer = fs.readFileSync("data/test.pdf");
-
-  // await ingestPdf(
-  //   pdfBuffer,
-  //   "test.pdf",
-  //   chunks,
-  //   totalChunks
-  // );
 
   console.log(`\n====================================`);
   console.log(`Uploading ${chunks.length} chunks...`);
