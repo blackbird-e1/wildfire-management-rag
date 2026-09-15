@@ -40,13 +40,16 @@ async function generateEmbeddingWithRetry(
 }
 
 export default async function ingest() {
+  await createCollection();
+
   const chunks: {
     text: string;
     $vector: number[];
-    url: string;
+    source: string;
+    sourceType: "url" | "pdf";
   }[] = [];
 
-  let totalChunks = 0;
+  const totalChunks = { value: 0 };
 
   for (const url of urls) {
     console.log(`\n====================================`);
@@ -60,10 +63,10 @@ export default async function ingest() {
     for (let i = 0; i < documents.length; i++) {
       const doc = documents[i];
 
-      totalChunks++;
+      totalChunks.value++;
 
       console.log(
-        `Embedding chunk ${i + 1}/${documents.length} (${totalChunks} total)`
+        `Embedding chunk ${i + 1}/${documents.length} (${totalChunks.value} total)`
       );
 
       const embedding = await generateEmbeddingWithRetry(
@@ -73,7 +76,8 @@ export default async function ingest() {
       chunks.push({
         text: doc.pageContent,
         $vector: embedding,
-        url,
+        source: url,
+        sourceType: "url",
       });
 
       await sleep(DELAY_MS);
@@ -84,13 +88,12 @@ export default async function ingest() {
   console.log(`Uploading ${chunks.length} chunks...`);
   console.log(`====================================\n`);
 
-  await createCollection();
-
   await uploadData(
     chunks.map((doc) => ({
       $vector: doc.$vector,
       text: doc.text,
-      url: doc.url,
+      source: doc.source,
+      sourceType: doc.sourceType,
     }))
   );
 

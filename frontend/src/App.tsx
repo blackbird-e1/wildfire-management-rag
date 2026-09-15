@@ -14,9 +14,11 @@ import Incidents from "./components/Incidents";
 
 import type { Incident } from "./types/Incident";
 import Reports from "./components/Reports";
+import KnowledgeBase from "./components/KnowledgeBase";
 
 type View =
   | "overview"
+  | "knowledge"
   | "monitoring"
   | "risk"
   | "incidents"
@@ -28,6 +30,7 @@ const NAV_ITEMS: {
   icon: string;
 }[] = [
   { id: "overview", label: "Overview", icon: "⌂" },
+  { id: "knowledge", label: "Knowledge Base", icon: "▣" },
   { id: "monitoring", label: "Monitoring", icon: "◉" },
   { id: "risk", label: "Risk Map", icon: "⌁" },
   { id: "incidents", label: "Incidents", icon: "!" },
@@ -39,9 +42,10 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const [selectedIncident, setSelectedIncident] =
-  useState<Incident | null>(null);
+    useState<Incident | null>(null);
+  const [knowledgeChatEnabled, setKnowledgeChatEnabled] =
+    useState(false);
 
   async function sendMessage(message: string) {
     if (!message.trim() || isLoading) {
@@ -84,6 +88,7 @@ function App() {
         content:
           data.answer ||
           "The system did not return an answer.",
+        sources: data.sources || [],
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -135,6 +140,15 @@ function App() {
             onSend={sendMessage}
           />
         );
+
+    case "knowledge":
+      return (
+        <KnowledgeBase
+          onUploadSuccess={() =>
+            setKnowledgeChatEnabled(true)
+          }
+        />
+      );
 
       case "monitoring":
         return <Monitoring />;
@@ -291,7 +305,8 @@ function App() {
               {renderMainContent()}
             </div>
 
-            {activeView === "overview" && (
+            {(activeView === "overview" ||
+              (activeView === "knowledge" && knowledgeChatEnabled)) && (
               <ChatInput
                 onSend={sendMessage}
                 isLoading={isLoading}

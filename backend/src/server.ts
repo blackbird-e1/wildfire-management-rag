@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
+import multer from "multer";
 
 import ingest from "./ingest";
+import { ingestPdf } from "./lib/pdfIngest";
 
 import { overrideFetchImplementation } from "langsmith";
 import { langsmithFetch } from "./lib/langsmithFetch";
@@ -18,6 +20,21 @@ import { queryDatabase } from "./lib/db";
 
 
 const app = express();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error("Only PDF files are allowed."));
+  },
+});
 
 const PORT =
   Number(process.env.PORT) || 3001;
@@ -70,6 +87,54 @@ app.post("/ingest", async (_req, res) => {
   }
 });
 
+/*
+ * Upload PDF
+ *
+ * Receives a PDF file, processes it,
+ * generates embeddings, and stores
+ * the resulting vectors in Astra DB.
+ */
+app.post(
+  "/upload-pdf",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        res.status(400).json({
+          success: false,
+          error: "A PDF file is required.",
+        });
+
+        return;
+      }
+
+      console.log(
+        `[PDF Upload] Processing: ${req.file.originalname}`
+      );
+
+      await ingestPdf(
+        req.file.buffer,
+        req.file.originalname
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "PDF uploaded and processed successfully.",
+        filename: req.file.originalname,
+      });
+    } catch (error) {
+      console.error(
+        "[PDF Upload] Processing failed:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        error: "PDF processing failed.",
+      });
+    }
+  }
+);
 
 /*
  * Ask
