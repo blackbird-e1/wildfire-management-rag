@@ -135,3 +135,106 @@ export async function queryDatabase(
     throw error;
   }
 }
+
+type AlertSubscriber = {
+  email: string;
+  active: boolean;
+  createdAt: string;
+};
+
+const SUBSCRIBER_COLLECTION_NAME = "alert_subscribers";
+
+const subscriberCollection = db.collection<AlertSubscriber>(
+  SUBSCRIBER_COLLECTION_NAME
+);
+
+export async function createSubscriberCollection() {
+  console.log("\n===== CREATE SUBSCRIBER COLLECTION START =====");
+
+  try {
+    console.log(
+      "Creating collection:",
+      SUBSCRIBER_COLLECTION_NAME
+    );
+
+    await db.createCollection(SUBSCRIBER_COLLECTION_NAME);
+
+    console.log("✅ Subscriber collection created successfully.");
+  } catch (error: any) {
+    console.error("❌ createSubscriberCollection() failed:");
+    console.error(error);
+
+    const message = String(error?.message ?? "").toLowerCase();
+
+    if (
+      message.includes("already") ||
+      message.includes("exists")
+    ) {
+      console.log("ℹ️ Subscriber collection already exists.");
+      return;
+    }
+
+    throw error;
+  }
+
+  console.log("===== CREATE SUBSCRIBER COLLECTION END =====\n");
+}
+
+export async function addSubscriber(
+  email: string
+) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const existing = await subscriberCollection.findOne({
+    email: normalizedEmail,
+  });
+
+  if (existing) {
+    if (existing.active) {
+      return {
+        success: true,
+        alreadySubscribed: true,
+        message: "Email is already subscribed.",
+      };
+    }
+
+    await subscriberCollection.updateOne(
+      { email: normalizedEmail },
+      {
+        $set: {
+          active: true,
+        },
+      }
+    );
+
+    return {
+      success: true,
+      alreadySubscribed: false,
+      message: "Subscription reactivated.",
+    };
+  }
+
+  await subscriberCollection.insertOne({
+    email: normalizedEmail,
+    active: true,
+    createdAt: new Date().toISOString(),
+  });
+
+  return {
+    success: true,
+    alreadySubscribed: false,
+    message: "Successfully subscribed to environmental alerts.",
+  };
+}
+
+export async function getActiveSubscribers(): Promise<
+  AlertSubscriber[]
+> {
+  const subscribers = await subscriberCollection
+    .find({
+      active: true,
+    })
+    .toArray();
+
+  return subscribers;
+}

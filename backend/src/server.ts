@@ -1,12 +1,11 @@
 import express from "express";
 import cors from "cors";
 import multer from "multer";
-
 import ingest from "./ingest";
 import { ingestPdf } from "./lib/pdfIngest";
-
 import { overrideFetchImplementation } from "langsmith";
 import { langsmithFetch } from "./lib/langsmithFetch";
+import alertsRouter from "./alerts";
 
 overrideFetchImplementation(langsmithFetch);
 
@@ -48,6 +47,7 @@ app.use(
 
 app.use(express.json());
 
+app.use("/alerts", alertsRouter);
 
 /*
  * Health check
