@@ -9,12 +9,18 @@ export function evaluateWeather(
 ): WeatherAlert {
   const reasons: string[] = [];
 
+  // Normal production rules
   if (temperature >= 40) {
     reasons.push(`High temperature: ${temperature}°C`);
   }
 
   if (rainfall >= 50) {
     reasons.push(`Heavy rainfall: ${rainfall}mm`);
+  }
+
+  // Temporary testing mode
+  if (process.env.TEST_ALERT === "true") {
+    reasons.push("Test alert triggered manually");
   }
 
   return {
