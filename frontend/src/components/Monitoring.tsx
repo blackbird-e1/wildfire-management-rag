@@ -13,6 +13,11 @@ function Monitoring() {
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState("");
 
+  const [email, setEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscriptionMessage, setSubscriptionMessage] = useState("");
+  const [subscriptionError, setSubscriptionError] = useState("");
+
   const API_URL =
     import.meta.env.VITE_API_URL || "http://localhost:3001";
 
@@ -62,6 +67,58 @@ function Monitoring() {
   useEffect(() => {
     searchKnowledge("wildfire suppression");
   }, []);
+
+  async function handleSubscribe(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!email.trim() || isSubscribing) {
+      return;
+    }
+
+    setIsSubscribing(true);
+    setSubscriptionMessage("");
+    setSubscriptionError("");
+
+    try {
+      const response = await fetch(`${API_URL}/alerts/subscribe`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Unable to subscribe to environmental alerts."
+        );
+      }
+
+      if (data.alreadySubscribe) {
+        setSubscriptionMessage(
+          "You're already subscribed to environmental alerts."
+        );
+      } else {
+        setSubscriptionMessage(
+          "You're subscribed to environmental alerts."
+        );
+      }
+
+      setEmail("");
+    } catch (error) {
+      setSubscriptionError(
+        error instanceof Error
+          ? error.message
+          : "Unable to subscribe to environmental alerts."
+      );
+    } finally {
+      setIsSubscribing(false);
+    }
+  }
 
   function getSourceName(url: string | undefined) {
     if (!url) {
@@ -208,6 +265,55 @@ function Monitoring() {
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.03] p-5">
+          <div className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-400">
+              !
+            </span>
+
+            <div>
+              <p className="text-sm font-medium text-white">
+                Environmental Alerts
+              </p>
+
+              <p className="mt-1 text-xs text-gray-600">
+                Get notified when conditions become concerning.
+              </p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubscribe} className="mt-5">
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+              required
+              className="w-full rounded-xl border border-white/10 bg-[#080b0f] px-3 py-3 text-xs text-white outline-none placeholder:text-gray-700 transition focus:border-red-500/40"
+            />
+
+            <button
+              type="submit"
+              disabled={isSubscribing || !email.trim()}
+              className="mt-2 w-full rounded-xl bg-red-600 px-4 py-3 text-xs font-medium text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {isSubscribing ? "Subscribing..." : "Get Notifications"}
+            </button>
+          </form>
+
+          {subscriptionMessage && (
+            <div className="mt-3 rounded-lg border border-green-500/20 bg-green-500/5 p-3 text-xs text-green-400">
+              {subscriptionMessage}
+            </div>
+          )}
+
+          {subscriptionError && (
+            <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-400">
+              {subscriptionError}
+            </div>
+          )}
         </div>
 
         <aside className="h-fit">
