@@ -15,14 +15,15 @@ import Incidents from "./components/Incidents";
 import type { Incident } from "./types/Incident";
 import Reports from "./components/Reports";
 import KnowledgeBase from "./components/KnowledgeBase";
-
+import QuantumOptimizer from "./components/QuantumOptimizer";
 type View =
   | "overview"
   | "knowledge"
   | "monitoring"
   | "risk"
   | "incidents"
-  | "reports";
+  | "reports"
+  | "quantum";
 
 const NAV_ITEMS: {
   id: View;
@@ -35,6 +36,11 @@ const NAV_ITEMS: {
   { id: "risk", label: "Risk Map", icon: "⌁" },
   { id: "incidents", label: "Incidents", icon: "!" },
   { id: "reports", label: "Reports", icon: "▤" },
+  {
+    id: "quantum",
+    label: "Quantum Optimizer",
+    icon: "⚛",
+  },
 ];
 
 function App() {
@@ -171,6 +177,9 @@ function App() {
 
       case "reports":
         return <Reports />;
+
+      case "quantum":
+        return <QuantumOptimizer />;
 
       default:
         return (

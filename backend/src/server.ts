@@ -6,6 +6,7 @@ import { ingestPdf } from "./lib/pdfIngest";
 import { overrideFetchImplementation } from "langsmith";
 import { langsmithFetch } from "./lib/langsmithFetch";
 import alertsRouter from "./alerts";
+import quantumRouter from "./quantum";
 
 overrideFetchImplementation(langsmithFetch);
 
@@ -48,6 +49,7 @@ app.use(
 app.use(express.json());
 
 app.use("/alerts", alertsRouter);
+app.use("/quantum", quantumRouter);
 
 /*
  * Health check
