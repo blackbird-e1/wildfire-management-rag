@@ -16,6 +16,11 @@ import type { Incident } from "./types/Incident";
 import Reports from "./components/Reports";
 import KnowledgeBase from "./components/KnowledgeBase";
 import QuantumOptimizer from "./components/QuantumOptimizer";
+
+type RiskZone = {
+  id: string;
+  risk: number;
+};
 type View =
   | "overview"
   | "knowledge"
@@ -52,6 +57,20 @@ function App() {
     useState<Incident | null>(null);
   const [knowledgeChatEnabled, setKnowledgeChatEnabled] =
     useState(false);
+  const [riskZones, setRiskZones] = useState<RiskZone[]>([
+    {
+      id: "Zone A",
+      risk: 10,
+    },
+    {
+      id: "Zone B",
+      risk: 7,
+    },
+    {
+      id: "Zone C",
+      risk: 3,
+    },
+  ]);
 
   async function sendMessage(message: string) {
     if (!message.trim() || isLoading) {
@@ -112,6 +131,21 @@ function App() {
     }
   }
 
+  function handleRiskChange(zoneId: string, risk: number) {
+    setRiskZones((currentZones) =>
+      currentZones.map((zone) => {
+        if (zone.id === zoneId) {
+          return {
+            ...zone,
+            risk,
+          };
+        }
+
+        return zone;
+      })
+    );
+  }
+
   function handleNavigation(view: View) {
     setActiveView(view);
     setSidebarOpen(false);
@@ -165,6 +199,8 @@ function App() {
             selectedIncident={selectedIncident}
             onIncidentSelect={handleIncidentSelect}
             onClearIncident={handleClearIncident}
+            zones={riskZones}
+            onRiskChange={handleRiskChange}
           />
         );
 
@@ -179,7 +215,12 @@ function App() {
         return <Reports />;
 
       case "quantum":
-        return <QuantumOptimizer />;
+        return (
+          <QuantumOptimizer
+            zones={riskZones}
+            onRiskChange={handleRiskChange}
+          />
+        );  
 
       default:
         return (

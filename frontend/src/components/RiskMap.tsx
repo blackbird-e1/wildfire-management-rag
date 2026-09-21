@@ -15,6 +15,10 @@ import type { LatLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import type { GeoFeature } from "../types/GeoFeature";
+type RiskZone = {
+  id: string;
+  risk: number;
+};
 
 type SearchResult = {
   display_name: string;
@@ -80,14 +84,18 @@ function MapController({
 
 type RiskMapProps = {
   selectedIncident: Incident | null;
-  onIncidentSelect?: (incident: Incident) => void;
-  onClearIncident?: () => void;
+  onIncidentSelect: (incident: Incident) => void;
+  onClearIncident: () => void;
+  zones: RiskZone[];
+  onRiskChange: (zoneId: string, risk: number) => void;
 };
 
 export default function RiskMap({
   selectedIncident,
   onIncidentSelect,
   onClearIncident,
+  zones,
+  onRiskChange,
 }: RiskMapProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResult, setSearchResult] =
@@ -164,8 +172,8 @@ export default function RiskMap({
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
-          Explore geographic locations and prepare the workspace
-          for incident and environmental data layers.
+          Explore wildfire locations and adjust modeled
+          risk levels used for resource allocation.
         </p>
 
         {/* Search */}
@@ -191,6 +199,71 @@ export default function RiskMap({
             {isSearching ? "Searching..." : "Search"}
           </button>
         </form>
+
+        <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.025] p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
+              Risk Zones
+            </p>
+
+            <p className="mt-1 text-xs text-gray-600">
+              Adjust modeled risk scores used by the decision-support system.
+            </p>
+          </div>
+
+          <span className="text-[10px] uppercase tracking-wider text-gray-600">
+            0–10
+          </span>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {zones.map((zone) => {
+            let riskLabel = "LOW";
+
+            if (zone.risk >= 8) {
+              riskLabel = "HIGH";
+            } else if (zone.risk >= 5) {
+              riskLabel = "MEDIUM";
+            }
+
+            return (
+              <div
+                key={zone.id}
+                className="rounded-xl border border-white/10 bg-black/20 p-3"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-white">
+                    {zone.id}
+                  </span>
+
+                  <span className="text-sm font-semibold text-white">
+                    {zone.risk}
+                  </span>
+                </div>
+
+                <p className="mt-1 text-[10px] uppercase tracking-wider text-gray-600">
+                  {riskLabel}
+                </p>
+
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  value={zone.risk}
+                  onChange={(event) =>
+                    onRiskChange(
+                      zone.id,
+                      Number(event.target.value)
+                    )
+                  }
+                  className="mt-3 w-full"
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
         {searchError && (
           <p className="mt-2 text-xs text-red-400">

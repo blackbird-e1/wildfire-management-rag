@@ -1,8 +1,13 @@
 import { useState } from "react";
 
-type Zone = {
+type RiskZone = {
   id: string;
   risk: number;
+};
+
+type QuantumOptimizerProps = {
+  zones: RiskZone[];
+  onRiskChange: (zoneId: string, risk: number) => void;
 };
 
 type Deployment = {
@@ -16,21 +21,6 @@ type OptimizationResult = {
   status: string;
   deployment: Deployment[];
 };
-
-const INITIAL_ZONES: Zone[] = [
-  {
-    id: "Zone A",
-    risk: 10,
-  },
-  {
-    id: "Zone B",
-    risk: 7,
-  },
-  {
-    id: "Zone C",
-    risk: 3,
-  },
-];
 
 function formatResource(resource: string) {
   return resource
@@ -69,29 +59,55 @@ function getRiskLabel(risk: number) {
   return "LOW";
 }
 
-export default function QuantumOptimizer() {
-  const [zones, setZones] = useState<Zone[]>(
-    INITIAL_ZONES
+function getOptimizationExplanation(
+  zones: RiskZone[],
+  deployment: Deployment[]
+) {
+  if (zones.length === 0) {
+    return "No wildfire zones were provided for optimization.";
+  }
+
+  const highestRiskZone = zones.reduce((highest, zone) => {
+    if (zone.risk > highest.risk) {
+      return zone;
+    }
+
+    return highest;
+  });
+
+  const resourcesForHighestRisk = deployment.filter(
+    (item) => item.zone === highestRiskZone.id
   );
 
+  if (resourcesForHighestRisk.length > 0) {
+    const resources = resourcesForHighestRisk
+    .map((item) => formatResource(item.resource));
+
+    let resourceText = resources[0];
+
+    if (resources.length > 1) {
+      resourceText = `${resources.slice(0, -1).join(", ")} and ${resources[resources.length - 1]}`;
+    }
+
+    return `${highestRiskZone.id} has the highest current risk at ${highestRiskZone.risk}/10. The optimizer assigned ${resourceText} to this zone while satisfying the available resource constraints.`;
+  }
+
+  return `${highestRiskZone.id} has the highest current risk at ${highestRiskZone.risk}/10. The optimizer produced a deployment plan based on the current risk distribution and resource constraints.`;
+}
+
+export default function QuantumOptimizer({
+    zones,
+    onRiskChange,
+  }: QuantumOptimizerProps) {
   const [result, setResult] =
     useState<OptimizationResult | null>(null);
-
   const [isLoading, setIsLoading] = useState(false);
-
   const [error, setError] = useState("");
-
-  function updateRisk(index: number, value: number) {
-    setZones((currentZones) => {
-      const updatedZones = [...currentZones];
-
-      updatedZones[index] = {
-        ...updatedZones[index],
-        risk: value,
-      };
-
-      return updatedZones;
-    });
+  function updateRisk(
+    zoneId: string,
+    value: number
+  ) {
+    onRiskChange(zoneId, value);
   }
 
   async function optimizeResources() {
@@ -173,7 +189,7 @@ export default function QuantumOptimizer() {
 
           <div className="space-y-3">
 
-            {zones.map((zone, index) => {
+            {zones.map((zone) => {
               const riskLabel = getRiskLabel(
                 zone.risk
               );
@@ -207,7 +223,7 @@ export default function QuantumOptimizer() {
                     value={zone.risk}
                     onChange={(event) =>
                       updateRisk(
-                        index,
+                        zone.id,
                         Number(event.target.value)
                       )
                     }
@@ -400,6 +416,19 @@ export default function QuantumOptimizer() {
                 </div>
 
               </div>
+
+              <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.025] p-4">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                Decision Explanation
+              </p>
+
+              <p className="mt-2 text-xs leading-5 text-gray-400">
+                {getOptimizationExplanation(
+                  zones,
+                  result.deployment
+                )}
+              </p>
+            </div>
 
               <div className="mt-6 grid grid-cols-2 gap-3">
 
