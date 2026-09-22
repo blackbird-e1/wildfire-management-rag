@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: wildfire-management-backend
+    runtime: node
+    buildCommand: cd backend && npm install && cd .. && python3 -m venv quantum/venv && quantum/venv/bin/pip install --upgrade pip && quantum/venv/bin/pip install -r quantum/requirements.txt
+    startCommand: cd backend && npm start
+    plan: free
