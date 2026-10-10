@@ -1,4 +1,22 @@
+
 @import "tailwindcss";
+
+:root {
+    color-scheme: dark;
+
+    /* Vanara brand palette */
+    --vanara-obsidian: #171916;
+    --vanara-forest: #22251F;
+    --vanara-bone: #D5C6A3;
+    --vanara-ember: #A74430;
+    --vanara-muted-forest: #66734A;
+    --vanara-ash: #A5A69B;
+
+    /* Shared UI colors */
+    --vanara-border: #3A3D34;
+    --vanara-text-muted: #B0B1A6;
+    --vanara-focus: #D5A17D;
+}
 
 html,
 body,
@@ -9,7 +27,12 @@ body,
 
 body {
     margin: 0;
-    background: #0b0f14;
-    color: white;
+    background: var(--vanara-obsidian);
+    color: var(--vanara-bone);
     font-family: Inter, sans-serif;
+}
+
+:focus-visible {
+    outline: 2px solid var(--vanara-focus);
+    outline-offset: 3px;
 }

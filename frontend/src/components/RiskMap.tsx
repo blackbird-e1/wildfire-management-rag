@@ -1,6 +1,6 @@
+
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-
 import type { Incident } from "../types/Incident";
 
 import {
@@ -15,6 +15,7 @@ import type { LatLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import type { GeoFeature } from "../types/GeoFeature";
+
 type RiskZone = {
   id: string;
   risk: number;
@@ -56,10 +57,7 @@ function MapController({
   useEffect(() => {
     if (selectedIncident) {
       map.flyTo(
-        [
-          selectedIncident.latitude,
-          selectedIncident.longitude,
-        ],
+        [selectedIncident.latitude, selectedIncident.longitude],
         10,
         {
           duration: 1.5,
@@ -120,7 +118,8 @@ export default function RiskMap({
     setSearchError("");
     setSearchResult(null);
     setSelectedLocation(null);
-    onClearIncident?.();
+    onClearIncident();
+
     try {
       const params = new URLSearchParams({
         q: query,
@@ -162,16 +161,16 @@ export default function RiskMap({
   return (
     <div className="flex h-full min-h-[calc(100vh-5rem)] flex-col">
       {/* Header */}
-      <div className="border-b border-white/10 px-6 py-5">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-500">
+      <div className="border-b border-[var(--vanara-border)] px-6 py-5">
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--vanara-ember)]">
           Geospatial Workspace
         </p>
 
-        <h1 className="mt-2 text-2xl font-semibold text-white">
+        <h1 className="mt-2 text-2xl font-semibold text-[var(--vanara-bone)]">
           Risk Map
         </h1>
 
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--vanara-ash)]">
           Explore wildfire locations and adjust modeled
           risk levels used for resource allocation.
         </p>
@@ -188,85 +187,96 @@ export default function RiskMap({
               setSearchQuery(event.target.value)
             }
             placeholder="Search location or region"
-            className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-gray-600 focus:border-red-500/40"
+            className="min-w-0 flex-1 rounded-xl border border-[var(--vanara-border)] bg-[var(--vanara-obsidian)] px-4 py-3 text-sm text-[var(--vanara-bone)] outline-none placeholder:text-[var(--vanara-ash)] focus:border-[var(--vanara-focus)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--vanara-focus)]"
           />
 
           <button
             type="submit"
-            disabled={isSearching}
-            className="rounded-xl bg-red-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isSearching || !searchQuery.trim()}
+            className="rounded-xl bg-[var(--vanara-ember)] px-5 py-3 text-sm font-medium text-[var(--vanara-bone)] transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--vanara-focus)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSearching ? "Searching..." : "Search"}
           </button>
         </form>
 
-        <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.025] p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
-              Risk Zones
-            </p>
+        {/* Risk zones */}
+        <div className="mt-5 rounded-2xl border border-[var(--vanara-border)] bg-[var(--vanara-forest)] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--vanara-ash)]">
+                Risk Zones
+              </p>
 
-            <p className="mt-1 text-xs text-gray-600">
-              Adjust modeled risk scores used by the decision-support system.
-            </p>
+              <p className="mt-1 text-xs text-[var(--vanara-text-muted)]">
+                Adjust modeled risk scores used by the decision-support system.
+              </p>
+            </div>
+
+            <span className="text-[10px] uppercase tracking-wider text-[var(--vanara-text-muted)]">
+              0–10
+            </span>
           </div>
 
-          <span className="text-[10px] uppercase tracking-wider text-gray-600">
-            0–10
-          </span>
-        </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {zones.map((zone) => {
+              let riskLabel = "LOW";
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {zones.map((zone) => {
-            let riskLabel = "LOW";
+              if (zone.risk >= 8) {
+                riskLabel = "HIGH";
+              } else if (zone.risk >= 5) {
+                riskLabel = "MEDIUM";
+              }
 
-            if (zone.risk >= 8) {
-              riskLabel = "HIGH";
-            } else if (zone.risk >= 5) {
-              riskLabel = "MEDIUM";
-            }
+              const riskColor =
+                riskLabel === "HIGH"
+                  ? "text-red-400"
+                  : riskLabel === "MEDIUM"
+                    ? "text-amber-400"
+                    : "text-[var(--vanara-muted-forest)]";
 
-            return (
-              <div
-                key={zone.id}
-                className="rounded-xl border border-white/10 bg-black/20 p-3"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-white">
-                    {zone.id}
-                  </span>
+              return (
+                <div
+                  key={zone.id}
+                  className="rounded-xl border border-[var(--vanara-border)] bg-[var(--vanara-obsidian)] p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-[var(--vanara-bone)]">
+                      {zone.id}
+                    </span>
 
-                  <span className="text-sm font-semibold text-white">
-                    {zone.risk}
-                  </span>
+                    <span className="text-sm font-semibold text-[var(--vanara-bone)]">
+                      {zone.risk}
+                    </span>
+                  </div>
+
+                  <p
+                    className={`mt-1 text-[10px] uppercase tracking-wider ${riskColor}`}
+                  >
+                    {riskLabel}
+                  </p>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    value={zone.risk}
+                    onChange={(event) =>
+                      onRiskChange(
+                        zone.id,
+                        Number(event.target.value)
+                      )
+                    }
+                    aria-label={`Risk score for ${zone.id}`}
+                    className="mt-3 w-full accent-[var(--vanara-ember)]"
+                  />
                 </div>
-
-                <p className="mt-1 text-[10px] uppercase tracking-wider text-gray-600">
-                  {riskLabel}
-                </p>
-
-                <input
-                  type="range"
-                  min="0"
-                  max="10"
-                  value={zone.risk}
-                  onChange={(event) =>
-                    onRiskChange(
-                      zone.id,
-                      Number(event.target.value)
-                    )
-                  }
-                  className="mt-3 w-full"
-                />
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
 
         {searchError && (
-          <p className="mt-2 text-xs text-red-400">
+          <p role="alert" className="mt-2 text-xs text-red-400">
             {searchError}
           </p>
         )}
@@ -274,7 +284,7 @@ export default function RiskMap({
 
       {/* Map */}
       <div className="relative min-h-0 flex-1 p-4 lg:p-6">
-        <div className="h-full min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-[#0b0f14]">
+        <div className="h-full min-h-[500px] overflow-hidden rounded-2xl border border-[var(--vanara-border)] bg-[var(--vanara-obsidian)]">
           <MapContainer
             center={DEFAULT_CENTER}
             zoom={5}
@@ -286,9 +296,7 @@ export default function RiskMap({
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-            <MapClickHandler
-              onSelect={handleMapSelection}
-            />
+            <MapClickHandler onSelect={handleMapSelection} />
 
             <MapController
               searchResult={searchResult}
@@ -321,7 +329,7 @@ export default function RiskMap({
                 ]}
                 radius={11}
                 eventHandlers={{
-                  click: () => onIncidentSelect?.(selectedIncident),
+                  click: () => onIncidentSelect(selectedIncident),
                 }}
               >
                 <Popup>
@@ -408,27 +416,27 @@ export default function RiskMap({
       </div>
 
       {/* Layer / status bar */}
-      <div className="border-t border-white/10 px-6 py-4">
-        <div className="flex flex-wrap gap-6 text-xs text-gray-500">
+      <div className="border-t border-[var(--vanara-border)] px-6 py-4">
+        <div className="flex flex-wrap gap-6 text-xs text-[var(--vanara-ash)]">
           <span>● Base map</span>
           <span>○ Incidents</span>
           <span>○ Areas of interest</span>
 
           {searchResult && (
-            <span className="text-gray-300">
+            <span className="text-[var(--vanara-bone)]">
               Location: {searchResult.display_name}
             </span>
           )}
 
           {selectedLocation && (
-            <span className="text-gray-300">
+            <span className="text-[var(--vanara-bone)]">
               Selected: {selectedLocation.lat.toFixed(4)},{" "}
               {selectedLocation.lng.toFixed(4)}
             </span>
           )}
 
           {selectedIncident && (
-            <span className="text-gray-300">
+            <span className="text-[var(--vanara-bone)]">
               Incident: {selectedIncident.title}
             </span>
           )}

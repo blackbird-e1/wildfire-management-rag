@@ -1,3 +1,4 @@
+
 import TypingIndicator from "./TypingIndicator";
 import type { Message } from "../types/Message";
 
@@ -35,8 +36,8 @@ export default function WelcomeScreen({
               <div
                 className={`max-w-3xl rounded-2xl px-5 py-4 whitespace-pre-wrap leading-relaxed ${
                   message.role === "user"
-                    ? "bg-red-600 text-white"
-                    : "border border-white/10 bg-white/[0.04] text-gray-200"
+                    ? "bg-[var(--vanara-ember)] text-[var(--vanara-bone)]"
+                    : "border border-[var(--vanara-border)] bg-[var(--vanara-forest)] text-[var(--vanara-bone)]"
                 }`}
               >
                 {message.content}
@@ -44,8 +45,8 @@ export default function WelcomeScreen({
                 {message.role === "assistant" &&
                   message.sources &&
                   message.sources.length > 0 && (
-                    <div className="mt-4 border-t border-white/10 pt-3">
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-gray-600">
+                    <div className="mt-4 border-t border-[var(--vanara-border)] pt-3">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--vanara-text-muted)]">
                         Source{message.sources.length > 1 ? "s" : ""}
                       </p>
 
@@ -60,7 +61,7 @@ export default function WelcomeScreen({
                         ).map((source, sourceIndex) => (
                           <div
                             key={`${source.source}-${sourceIndex}`}
-                            className="flex items-center gap-2 text-xs text-gray-500"
+                            className="flex items-center gap-2 text-xs text-[var(--vanara-ash)]"
                           >
                             <span>
                               {source.sourceType === "pdf"
@@ -70,7 +71,7 @@ export default function WelcomeScreen({
 
                             <span>{source.source}</span>
 
-                            <span className="text-gray-700">
+                            <span className="text-[var(--vanara-text-muted)]">
                               · {source.sourceType.toUpperCase()}
                             </span>
                           </div>
@@ -91,17 +92,17 @@ export default function WelcomeScreen({
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-red-500">
+        <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-[var(--vanara-ember)]">
           Wildfire Intelligence
         </p>
 
-        <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight text-[var(--vanara-bone)] sm:text-4xl">
           Situational awareness,
           <br />
           powered by AI.
         </h1>
 
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--vanara-ash)]">
           Search your wildfire knowledge base, investigate
           threats, and turn wildfire information into
           actionable intelligence.
@@ -135,13 +136,13 @@ export default function WelcomeScreen({
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
-        <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-6">
+        <section className="rounded-2xl border border-[var(--vanara-border)] bg-[var(--vanara-forest)] p-6">
           <div className="mb-6">
-            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
+            <p className="text-xs font-medium uppercase tracking-wider text-[var(--vanara-ash)]">
               Quick Analysis
             </p>
 
-            <h2 className="mt-2 text-xl font-semibold text-white">
+            <h2 className="mt-2 text-xl font-semibold text-[var(--vanara-bone)]">
               What would you like to investigate?
             </h2>
           </div>
@@ -152,7 +153,7 @@ export default function WelcomeScreen({
                 key={question}
                 type="button"
                 onClick={() => onSend(question)}
-                className="rounded-xl border border-white/10 bg-black/20 p-4 text-left text-sm text-gray-300 transition hover:border-red-500/40 hover:bg-white/[0.04] hover:text-white"
+                className="rounded-xl border border-[var(--vanara-border)] bg-[var(--vanara-obsidian)] p-4 text-left text-sm text-[var(--vanara-bone)] transition hover:border-[var(--vanara-ember)] hover:bg-[var(--vanara-ember)]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--vanara-focus)]"
               >
                 {question}
               </button>
@@ -160,8 +161,8 @@ export default function WelcomeScreen({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-6">
-          <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
+        <section className="rounded-2xl border border-[var(--vanara-border)] bg-[var(--vanara-forest)] p-6">
+          <p className="text-xs font-medium uppercase tracking-wider text-[var(--vanara-ash)]">
             Architecture
           </p>
 
@@ -208,16 +209,16 @@ function DashboardCard({
   description,
 }: DashboardCardProps) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-      <p className="text-xs uppercase tracking-wider text-gray-600">
+    <div className="rounded-2xl border border-[var(--vanara-border)] bg-[var(--vanara-forest)] p-5">
+      <p className="text-xs uppercase tracking-wider text-[var(--vanara-text-muted)]">
         {label}
       </p>
 
-      <p className="mt-3 text-xl font-semibold text-white">
+      <p className="mt-3 text-xl font-semibold text-[var(--vanara-bone)]">
         {value}
       </p>
 
-      <p className="mt-1 text-xs text-gray-500">
+      <p className="mt-1 text-xs text-[var(--vanara-ash)]">
         {description}
       </p>
     </div>
@@ -237,16 +238,16 @@ function ArchitectureStep({
 }: ArchitectureStepProps) {
   return (
     <div className="flex items-center gap-4">
-      <span className="font-mono text-xs text-red-500">
+      <span className="font-mono text-xs text-[var(--vanara-ember)]">
         {number}
       </span>
 
       <div>
-        <p className="text-sm font-medium text-gray-200">
+        <p className="text-sm font-medium text-[var(--vanara-bone)]">
           {title}
         </p>
 
-        <p className="text-xs text-gray-600">
+        <p className="text-xs text-[var(--vanara-ash)]">
           {description}
         </p>
       </div>

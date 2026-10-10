@@ -234,7 +234,7 @@ function App() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#080b0f] text-white">
+    <div className="relative min-h-screen bg-[var(--vanara-obsidian)] text-[var(--vanara-bone)]">
       <WelcomeAnimation />
 
       <div className="flex min-h-screen">
@@ -248,14 +248,14 @@ function App() {
         )}
 
         <aside
-          className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/10 bg-[#0b0f14] transition-transform duration-200 lg:static lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-[var(--vanara-border)] bg-[var(--vanara-obsidian)] transition-transform duration-200 lg:static lg:translate-x-0 ${
             sidebarOpen
               ? "translate-x-0"
               : "-translate-x-full"
           }`}
         >
           <div className="flex h-20 items-center border-b border-white/10 px-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-600 text-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--vanara-ember)] text-lg">
               🔥
             </div>
 
@@ -286,17 +286,17 @@ function App() {
                     onClick={() =>
                       handleNavigation(item.id)
                     }
-                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition ${
-                      active
-                        ? "bg-red-500/10 text-white"
-                        : "text-gray-500 hover:bg-white/[0.04] hover:text-gray-200"
-                    }`}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--vanara-focus)] ${
+                    active
+                      ? "bg-[var(--vanara-ember)]/10 text-[var(--vanara-bone)]"
+                      : "text-[var(--vanara-ash)] hover:bg-[var(--vanara-forest)] hover:text-[var(--vanara-bone)]"
+                  }`}
                   >
                     <span
                       className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm ${
                         active
-                          ? "bg-red-500/15 text-red-400"
-                          : "bg-white/[0.03] text-gray-600"
+                          ? "bg-[var(--vanara-ember)]/15 text-[var(--vanara-ember)]"
+                          : "bg-[var(--vanara-forest)] text-[var(--vanara-ash)]"
                       }`}
                     >
                       {item.icon}
@@ -305,7 +305,7 @@ function App() {
                     <span>{item.label}</span>
 
                     {active && (
-                      <span className="ml-auto h-1.5 w-1.5 rounded-full bg-red-500" />
+                      <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--vanara-ember)]" />
                     )}
                   </button>
                 );
