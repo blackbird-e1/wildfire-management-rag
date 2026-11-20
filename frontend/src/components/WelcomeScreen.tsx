@@ -71,7 +71,7 @@ export default function WelcomeScreen({
                             <span>{source.source}</span>
 
                             <span className="text-gray-700">
-                              · {source.sourceType.toUpperCase()}
+                              · {String(source.sourceType ?? "unknown").toUpperCase()}
                             </span>
                           </div>
                         ))}
